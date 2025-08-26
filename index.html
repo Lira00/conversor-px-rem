@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor PX ↔ REM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center mb-4">Conversor PX ↔ REM</h1>
+        <p class="text-center text-gray-600 mb-4">Defina o tamanho base da fonte (em px) e insira um valor para converter.</p>
+
+        <!-- Tamanho base da fonte -->
+        <div class="mb-4">
+            <label for="baseFontSize" class="block text-sm font-medium text-gray-700">Tamanho base da fonte (px):</label>
+            <input
+                type="number"
+                id="baseFontSize"
+                value="16"
+                min="1"
+                step="1"
+                placeholder="Ex: 16"
+                class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-describedby="baseFontSizeError"
+            />
+            <span id="baseFontSizeError" class="text-red-500 text-sm hidden"></span>
+        </div>
+
+        <!-- Conversor PX para REM -->
+        <div class="mb-4">
+            <label for="pxInput" class="block text-sm font-medium text-gray-700">Valor em PX:</label>
+            <input
+                type="number"
+                id="pxInput"
+                placeholder="Ex: 32"
+                class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-describedby="pxInputError"
+            />
+            <span id="pxInputError" class="text-red-500 text-sm hidden"></span>
+        </div>
+
+        <!-- Conversor REM para PX -->
+        <div class="mb-4">
+            <label for="remInput" class="block text-sm font-medium text-gray-700">Valor em REM:</label>
+            <input
+                type="number"
+                id="remInput"
+                placeholder="Ex: 2"
+                class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-describedby="remInputError"
+            />
+            <span id="remInputError" class="text-red-500 text-sm hidden"></span>
+        </div>
+
+        <!-- Resultado -->
+        <div id="resultado" class="mt-4 text-lg text-center font-semibold"></div>
+
+        <!-- Botão Limpar -->
+        <button id="clearButton" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition mt-4">
+            Limpar
+        </button>
+
+        <!-- Placeholder para Anúncio -->
+        <div class="mt-6 p-4 bg-gray-200 rounded-md text-center">
+            <p class="text-sm font-medium text-gray-800">Anúncio</p>
+            <p class="text-xs text-gray-600">Banner 300x250 (Placeholder)</p>
+        </div>
+    </div>
+
+    <script>
+        const baseFontSizeInput = document.getElementById('baseFontSize');
+        const pxInput = document.getElementById('pxInput');
+        const remInput = document.getElementById('remInput');
+        const baseFontSizeError = document.getElementById('baseFontSizeError');
+        const pxInputError = document.getElementById('pxInputError');
+        const remInputError = document.getElementById('remInputError');
+        const resultado = document.getElementById('resultado');
+        const clearButton = document.getElementById('clearButton');
+
+        function validateInput(input, errorElement, minValue = 0) {
+            const value = parseFloat(input.value);
+            if (isNaN(value)) {
+                errorElement.textContent = 'Por favor, insira um número válido.';
+                errorElement.classList.remove('hidden');
+                return false;
+            } else if (value <= minValue) {
+                errorElement.textContent = `O valor deve ser maior que ${minValue}.`;
+                errorElement.classList.remove('hidden');
+                return false;
+            } else {
+                errorElement.classList.add('hidden');
+                return true;
+            }
+        }
+
+        function getBaseFontSize() {
+            const base = parseFloat(baseFontSizeInput.value);
+            if (isNaN(base) || base <= 0) {
+                baseFontSizeError.textContent = 'O tamanho base da fonte deve ser maior que 0.';
+                baseFontSizeError.classList.remove('hidden');
+                return 16; // Valor padrão
+            }
+            return base;
+        }
+
+        function updateConversions() {
+            const baseFontSize = getBaseFontSize();
+            const pxValue = parseFloat(pxInput.value);
+            const remValue = parseFloat(remInput.value);
+
+            // Valida entradas
+            const isPxValid = validateInput(pxInput, pxInputError, 0);
+            const isRemValid = validateInput(remInput, remInputError, 0);
+            const isBaseValid = validateInput(baseFontSizeInput, baseFontSizeError, 0);
+
+            // Limpa o resultado se não houver entrada válida
+            if (!isPxValid && !isRemValid) {
+                resultado.innerHTML = '';
+                return;
+            }
+
+            // Converte apenas a entrada preenchida
+            if (isPxValid && !remInput.value) {
+                const rem = pxValue / baseFontSize;
+                resultado.innerHTML = `${pxValue}px = ${rem.toFixed(4)}rem (com base ${baseFontSize}px)`;
+            } else if (isRemValid && !pxInput.value) {
+                const px = remValue * baseFontSize;
+                resultado.innerHTML = `${remValue}rem = ${px.toFixed(2)}px (com base ${baseFontSize}px)`;
+            }
+        }
+
+        // Atualiza ao digitar
+        baseFontSizeInput.addEventListener('input', () => {
+            updateConversions();
+        });
+
+        pxInput.addEventListener('input', () => {
+            remInput.value = ''; // Limpa o campo REM
+            updateConversions();
+        });
+
+        remInput.addEventListener('input', () => {
+            pxInput.value = ''; // Limpa o campo PX
+            updateConversions();
+        });
+
+        // Botão Limpar
+        clearButton.addEventListener('click', () => {
+            baseFontSizeInput.value = '16';
+            pxInput.value = '';
+            remInput.value = '';
+            baseFontSizeError.classList.add('hidden');
+            pxInputError.classList.add('hidden');
+            remInputError.classList.add('hidden');
+            resultado.innerHTML = '';
+        });
+
+        // Inicializa
+        updateConversions();
+    </script>
+</body>
+</html>
